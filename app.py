@@ -22,6 +22,9 @@ def get_binance_data():
             symbol = symbol_data['symbol']
             price = price_map.get(symbol)
 
+            if price is None:
+                continue  # ⚠️ evita pares sin precio para que no se caiga el renderizado
+
             result.append({
                 "exchange": "Binance",
                 "baseCurrency": base,
