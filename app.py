@@ -11,7 +11,7 @@ def get_binance_data():
         # Validación de exchangeInfo
         info_response = requests.get(url_info, timeout=5)
         if "application/json" not in info_response.headers.get("Content-Type", ""):
-            print("⚠️ exchangeInfo no es JSON")
+            print("⚠️ exchangeInfo no es JSON válido")
             print("🔍 Respuesta:", info_response.text[:200])
             return []
         info = info_response.json()
@@ -19,7 +19,7 @@ def get_binance_data():
         # Validación de ticker/price
         price_response = requests.get(url_price, timeout=5)
         if "application/json" not in price_response.headers.get("Content-Type", ""):
-            print("⚠️ ticker/price no es JSON")
+            print("⚠️ ticker/price no es JSON válido")
             print("🔍 Respuesta:", price_response.text[:200])
             return []
         prices = price_response.json()
@@ -48,7 +48,7 @@ def get_binance_data():
                 "link": f"https://www.binance.com/en/trade/{base}_{quote}"
             })
 
-        print(f"✅ Pares extraídos: {len(result)}")
+        print(f"✅ Pares válidos extraídos: {len(result)}")
         if result:
             print("🔎 Ejemplo:", result[0])
         return result
