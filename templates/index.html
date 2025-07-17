@@ -39,8 +39,7 @@
         <th>baseCurrency</th>
         <th>quoteCurrency</th>
         <th>baseCurrency / quoteCurrency</th>
-        <th>Precio</th>
-        <th>Ver Spot</th>
+        <th>Precio</th>  
       </tr>
     </thead>
     <tbody>
@@ -49,10 +48,9 @@
         <td>{{ row.exchange }}</td>
         <td>{{ row.baseCurrency }}</td>
         <td>{{ row.quoteCurrency }}</td>
-        <td>{{ row.symbol }}</td>
+        <td><a href="{{ row.link }}" target="_blank">{{ row.symbol }}</a></td>
         <td>{{ "%.8g"|format(row.price) }}</td>
-        <td><a href="{{ row.link }}" target="_blank">Ir</a></td>
-      </tr>
+       </tr>
       {% endfor %}
     </tbody>
   </table>
