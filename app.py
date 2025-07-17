@@ -8,8 +8,22 @@ def get_binance_data():
     url_price = "https://api.binance.com/api/v3/ticker/price"
 
     try:
-        info = requests.get(url_info, timeout=5).json()
-        prices = requests.get(url_price, timeout=5).json()
+        # Validación de exchangeInfo
+        info_response = requests.get(url_info, timeout=5)
+        if "application/json" not in info_response.headers.get("Content-Type", ""):
+            print("⚠️ exchangeInfo no es JSON")
+            print("🔍 Respuesta:", info_response.text[:200])
+            return []
+        info = info_response.json()
+
+        # Validación de ticker/price
+        price_response = requests.get(url_price, timeout=5)
+        if "application/json" not in price_response.headers.get("Content-Type", ""):
+            print("⚠️ ticker/price no es JSON")
+            print("🔍 Respuesta:", price_response.text[:200])
+            return []
+        prices = price_response.json()
+
         price_map = {item['symbol']: float(item['price']) for item in prices}
 
         result = []
@@ -23,7 +37,7 @@ def get_binance_data():
             price = price_map.get(symbol)
 
             if price is None:
-                continue  # ⚠️ evita pares sin precio para que no se caiga el renderizado
+                continue  # ⚠️ evita pares sin precio
 
             result.append({
                 "exchange": "Binance",
@@ -34,19 +48,18 @@ def get_binance_data():
                 "link": f"https://www.binance.com/en/trade/{base}_{quote}"
             })
 
-        print(f"Pares activos spot extraídos: {len(result)}")
+        print(f"✅ Pares extraídos: {len(result)}")
         if result:
-            print("Ejemplo:", result[0])
+            print("🔎 Ejemplo:", result[0])
         return result
 
     except Exception as e:
-        print(f"Error obteniendo datos de Binance: {e}")
+        print(f"❌ Error obteniendo datos de Binance: {e}")
         return []
 
 @app.route('/')
 def index():
     binance_rows = get_binance_data()
-    print("🧠 Versión actual de app.py: 2:11 con validación de precio")
     return render_template('index.html', rows=binance_rows)
 
 if __name__ == '__main__':
