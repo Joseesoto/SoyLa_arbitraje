@@ -1,69 +1,15 @@
-from flask import Flask, render_template
 import requests
 
-app = Flask(__name__)
-
-def get_binance_data():
-    url_info = "https://api.binance.com/api/v3/exchangeInfo"
-    url_price = "https://api.binance.com/api/v3/ticker/price"
-
+def test_api_binance():
+    url = "https://api.binance.com/api/v3/exchangeInfo"
     try:
-        # Validación de exchangeInfo
-        info_response = requests.get(url_info, timeout=5)
-        if "application/json" not in info_response.headers.get("Content-Type", ""):
-            print("⚠️ exchangeInfo no es JSON válido")
-            print("🔍 Respuesta:", info_response.text[:200])
-            return []
-
-        # Validación de ticker/price
-        price_response = requests.get(url_price, timeout=5)
-        if "application/json" not in price_response.headers.get("Content-Type", ""):
-            print("⚠️ ticker/price no es JSON válido")
-            print("🔍 Respuesta:", price_response.text[:200])
-            return []
-
-        info = info_response.json()
-        prices = price_response.json()
-        price_map = {item['symbol']: float(item['price']) for item in prices}
-
-        result = []
-        for symbol_data in info['symbols']:
-            # Solo pares que están activos y permiten trading spot
-            if symbol_data['status'] != 'TRADING':
-                continue
-            if not symbol_data.get('isSpotTradingAllowed', False):
-                continue
-
-            base = symbol_data['baseAsset']
-            quote = symbol_data['quoteAsset']
-            symbol = symbol_data['symbol']
-            price = price_map.get(symbol)
-
-            if price is None:
-                continue  # Evita pares sin precio
-
-            result.append({
-                "exchange": "Binance",
-                "baseCurrency": base,
-                "quoteCurrency": quote,
-                "symbol": f"{base}/{quote}",
-                "price": price,
-                "link": f"https://www.binance.com/en/trade/{base}_{quote}"
-            })
-
-        print(f"✅ Pares activos spot extraídos: {len(result)}")
-        if result:
-            print("🔎 Ejemplo:", result[0])
-        return result
-
+        response = requests.get(url, timeout=5)
+        print("🔍 Código HTTP:", response.status_code)
+        print("🔍 Content-Type:", response.headers.get("Content-Type", ""))
+        print("🔍 Primera parte del cuerpo:")
+        print(response.text[:500])  # Solo los primeros 500 caracteres
     except Exception as e:
-        print(f"❌ Error obteniendo datos de Binance: {e}")
-        return []
+        print("❌ Error de conexión:", e)
 
-@app.route('/')
-def index():
-    binance_rows = get_binance_data()
-    return render_template("index.html", rows=binance_rows)
-
-if __name__ == '__main__':
-    app.run(debug=True)
+# Ejecuta el test
+test_api_binance()
