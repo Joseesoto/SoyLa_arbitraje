@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>ArbitrajeWeb - Normalizador</title>
+
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    h2 { margin-bottom: 20px; }
+    .filters { margin-bottom: 20px; }
+    select { padding: 5px; margin-right: 15px; min-width: 180px; }
+    table { width: 100%; }
+    div.dataTables_length { text-align: right; margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <h2>🧠 Normalización de Pares por Exchange</h2>
+
+  <div class="filters">
+    <label>Moneda Base:</label>
+    <select id="baseFilter"></select>
+
+    <label>Stablecoins (Cotizada):</label>
+    <select id="quoteFilter" multiple>
+      {% for q in rows|map(attribute='quoteCurrency')|unique|sort %}
+        <option value="{{ q }}">{{ q }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <p>Pares cargados: {{ rows|length }}</p>
+
+  <table id="arbitrageTable" class="display">
+    <thead>
+      <tr>
+        <th>Exchange</th>
+        <th>baseCurrency</th>
+        <th>quoteCurrency</th>
+        <th>baseCurrency / quoteCurrency</th>
+        <th>Precio</th>
+        <th>Ver Spot</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>{{ row.exchange }}</td>
+        <td>{{ row.baseCurrency }}</td>
+        <td>{{ row.quoteCurrency }}</td>
+        <td>{{ row.symbol }}</td>
+        <td>{{ "%.8g"|format(row.price) }}</td>
+        <td><a href="{{ row.link }}" target="_blank">Ir</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="dataTables_length"></div>
+
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+  <script>
+    $(document).ready(function () {
+      var table = $('#arbitrageTable').DataTable({
+        dom: 'lrtip',
+        columnDefs: [
+          { targets: [1, 2], visible: false }
+        ],
+        language: {
+          lengthMenu: "Mostrar _MENU_ entradas",
+          info: "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+          paginate: {
+            previous: "Anterior",
+            next: "Siguiente"
+          }
+        }
+      });
+
+      $("div.dataTables_length").html($(".dataTables_length"));
+
+      $('#quoteFilter').select2({
+        placeholder: "Selecciona stablecoins",
+        allowClear: true,
+        width: 'resolve'
+      });
+
+      function populateBaseFilter() {
+        const basesSet = new Set();
+        table.rows().every(function () {
+          const data = this.data();
+          const base = data[1];
+          if (base) basesSet.add(base);
+        });
+
+        const $baseFilter = $('#baseFilter');
+        $baseFilter.empty().append('<option value="">-- Selecciona --</option>');
+        Array.from(basesSet).sort().forEach(base => {
+          $baseFilter.append(`<option value="${base}">${base}</option>`);
+        });
+
+        $baseFilter.select2({
+          placeholder: "Selecciona una base",
+          allowClear: true,
+          width: 'resolve'
+        });
+      }
+
+      function applyFilters() {
+        var baseSelected = $('#baseFilter').val()?.trim();
+        var quoteSelected = $('#quoteFilter').val() || [];
+
+        table.rows().every(function () {
+          var data = this.data();
+          var base = data[1];
+          var quote = data[2];
+          var show = true;
+
+          if (baseSelected && base !== baseSelected) show = false;
+          if (quoteSelected.length > 0 && !quoteSelected.includes(quote)) show = false;
+
+          show ? $(this.node()).show() : $(this.node()).hide();
+        });
+      }
+
+      populateBaseFilter();
+      $('#baseFilter, #quoteFilter').on('change', applyFilters);
+    });
+  </script>
+</body>
+</html>
