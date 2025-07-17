@@ -46,6 +46,7 @@ def get_binance_data():
 @app.route('/')
 def index():
     binance_rows = get_binance_data()
+    print("🧠 Versión actual de app.py: 2:11 con validación de precio")
     return render_template('index.html', rows=binance_rows)
 
 if __name__ == '__main__':
