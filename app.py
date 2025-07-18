@@ -1,15 +1,14 @@
 import requests
 
-def test_api_binance():
+def probar_binance():
     url = "https://api.binance.com/api/v3/exchangeInfo"
     try:
         response = requests.get(url, timeout=5)
         print("🔍 Código HTTP:", response.status_code)
-        print("🔍 Content-Type:", response.headers.get("Content-Type", ""))
-        print("🔍 Primera parte del cuerpo:")
-        print(response.text[:500])  # Solo los primeros 500 caracteres
+        print("🔍 Tipo de respuesta:", response.headers.get("Content-Type", ""))
+        print("🔍 Primeros 500 caracteres del cuerpo:")
+        print(response.text[:500])
     except Exception as e:
-        print("❌ Error de conexión:", e)
+        print("❌ Error conectando con Binance:", e)
 
-# Ejecuta el test
-test_api_binance()
+probar_binance()
